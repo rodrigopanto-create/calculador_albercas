@@ -1,0 +1,10 @@
+[package]
+name = "calculador_albercas"
+version = "0.1.0"
+edition = "2021"
+authors = ["Rodrigo <tu_email@ejemplo.com>"]
+description = "Calculadora de química y volumen para albercas en Rust"
+
+[dependencies]
+chrono = "0.4"
+
