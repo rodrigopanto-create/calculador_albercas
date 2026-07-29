@@ -1,4 +1,4 @@
-# 🏊 Calculadora de Tratamiento Químico para Albercas v0.7
+# 🏊 Calculadora de Tratamiento Químico para Albercas v1.0
 
 Aplicación de consola escrita en **Rust** diseñada para calcular dosis de químicos, evaluar el estado del agua y calcular el **Índice de Saturación de Langelier (ISL)** para el mantenimiento profesional de piscinas.
 
