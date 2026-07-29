@@ -1,0 +1,48 @@
+name: Deploy Cargo Doc to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # O 'master' si usas esa rama
+
+# Otorga permisos para escribir en GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}/calculador_albercas/
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Instalar Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Generar documentación con Cargo
+        run: cargo doc --no-deps --all-targets
+
+      - name: Crear redirección al index principal
+        run: |
+          echo '<meta http-equiv="refresh" content="0; url=calculador_albercas/index.html">' > target/doc/index.html
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Subir artefacto de documentación
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'target/doc'
+
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
