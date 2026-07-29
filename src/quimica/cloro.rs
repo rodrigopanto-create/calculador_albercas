@@ -49,3 +49,30 @@ impl TipoCloro {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::quimica::volumen::Alberca;
+
+    #[test]
+    fn test_sin_incremento_cloro() {
+        let alberca = Alberca::nueva_rectangular(10.0, 5.0, 1.0);
+        let dosis = calcular_dosis_producto(&alberca, 3.0, 2.0, TipoCloro::Tricloro);
+        assert_eq!(dosis, 0.0);
+    }
+
+    #[test]
+    fn test_dosificacion_cloro_liquido() {
+        let alberca = Alberca::nueva_rectangular(10.0, 5.0, 2.0);
+        let dosis = calcular_dosis_producto(&alberca, 1.0, 3.0, TipoCloro::Liquido);
+        assert!(dosis > 0.0);
+    }
+
+    #[test]
+    fn test_dosificacion_tricloro_solido() {
+        let alberca = Alberca::nueva_rectangular(10.0, 5.0, 2.0);
+        let dosis = calcular_dosis_producto(&alberca, 1.0, 3.0, TipoCloro::Tricloro);
+        assert!(dosis > 0.0);
+    }
+}

@@ -25,3 +25,25 @@ impl Alberca {
         self.volumen_litros / 1000.0
     }
 }
+
+// Código existente de volumen.rs ...
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_calculo_volumen_rectangular() {
+        // Alberca de 10m x 5m x 1.5m = 75 m³ = 75,000 Litros
+        let alberca = Alberca::nueva_rectangular(10.0, 5.0, 1.5);
+        
+        assert_eq!(alberca.volumen_m3(), 75.0);
+        assert_eq!(alberca.volumen_litros, 75000.0);
+    }
+
+    #[test]
+    fn test_volumen_dimensiones_cero() {
+        let alberca = Alberca::nueva_rectangular(0.0, 5.0, 1.5);
+        assert_eq!(alberca.volumen_litros, 0.0);
+    }
+}

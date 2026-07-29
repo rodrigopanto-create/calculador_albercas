@@ -1,4 +1,5 @@
 /// Resultado del análisis de saturación del agua
+#[derive(Debug, PartialEq)]
 pub enum ClasificacionIsl {
     Corrosiva(f64),  // ISL < -0.3 (Daña equipos y superficies)
     Equilibrada(f64), // -0.3 <= ISL <= 0.3 (Perfecto)
@@ -66,5 +67,26 @@ pub fn calcular_isl(
         ClasificacionIsl::Incrustante(isl_valor)
     } else {
         ClasificacionIsl::Equilibrada(isl_valor)
+    }
+}
+
+// Código existente de isl.rs ...
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_calculo_isl_balanceado() {
+        // Agua balanceada típica: pH 7.5, Temp 26°C, Dureza 250, Alcalinidad 100
+        let resultado = calcular_isl(7.5, 26.0, 250.0, 100.0);
+        
+        // Verificamos con pattern matching sobre la variante del enum
+        match resultado {
+            ClasificacionIsl::Equilibrada(val) => {
+                assert!(val >= -0.3 && val <= 0.3, "El valor ISL era {}, fuera del rango esperado", val);
+            }
+            _ => panic!("Se esperaba ClasificacionIsl::Equilibrada, pero se obtuvo {:?}", resultado),
+        }
     }
 }

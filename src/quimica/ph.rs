@@ -1,46 +1,87 @@
-/// Productos comerciales habituales para ajustar el pH
-#[derive(Debug, Clone, Copy)]
+use crate::quimica::volumen::Alberca;
+
+/// Tipos de ajuste de pH disponibles con sus nombres descriptivos
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum AjustePh {
-    SubirPh,  // Carbonato de Sodio (Soda Ash)
-    BajarPh,  // Ácido Muriático / Clorhídrico (~31.45%)
+    SubirPh,
+    BajarPh,
+    Ninguno,
 }
 
 impl AjustePh {
+    /// Retorna el nombre legible del producto o acción requerida
     pub fn nombre(&self) -> &'static str {
         match self {
-            AjustePh::SubirPh => "Carbonato de Sodio (Incrementador de pH)",
-            AjustePh::BajarPh => "Ácido Muriático / Clorhídrico (Reductor de pH)",
+            AjustePh::SubirPh => "Carbonato de sodio (Incrementador de pH)",
+            AjustePh::BajarPh => "Ácido muriático (Reductor de pH)",
+            AjustePh::Ninguno => "Ninguno",
         }
     }
 }
 
-/// Estado del nivel de pH actual
+/// Estado o diagnóstico de la prueba de pH
+#[derive(Debug, PartialEq)]
 pub enum EstadoPh {
-    Bajo(f64),  // Requiere subir pH
-    Ideal,      // En rango perfecto
-    Alto(f64),  // Requiere bajar pH
+    Ideal,
+    Bajo(f64),
+    Alto(f64),
 }
 
-/// Evalúa el pH actual contra el rango estándar (7.2 - 7.6)
+/// Evalúa el nivel de pH actual
 pub fn evaluar_ph(ph_actual: f64) -> EstadoPh {
     if ph_actual < 7.2 {
-        EstadoPh::Bajo(7.4 - ph_actual) // Calculamos la diferencia hacia el ideal neutro (7.4)
+        let delta = 7.2 - ph_actual;
+        EstadoPh::Bajo(delta)
     } else if ph_actual > 7.6 {
-        EstadoPh::Alto(ph_actual - 7.4)
+        let delta = ph_actual - 7.6;
+        EstadoPh::Alto(delta)
     } else {
         EstadoPh::Ideal
     }
 }
 
-/// Calcula la dosis aproximada del producto químico
-/// Dosis base promedio: ~10g de Carbonato o ~10ml de Ácido por m³ (1000L) para mover 0.1 de pH
-use crate::quimica::volumen::Alberca;
+/// Calcula la dosis en gramos o ml según el tipo de desbalance
+pub fn calcular_dosis_ph(alberca: &Alberca, delta: f64) -> f64 {
+    // 10g/ml por m3 por cada 0.1 de ajuste necesario
+    delta * 10.0 * 10.0 * alberca.volumen_m3()
+}
 
-// ... (se mantienen igual tus enums AjustePh y EstadoPh, y la función evaluar_ph) ...
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-/// Calcula la dosis de producto químico recibiendo la Alberca por referencia
-pub fn calcular_dosis_ph(alberca: &Alberca, delta_ph: f64) -> f64 {
-    // Usamos el método de la struct para obtener los m³
-    let metros_cubicos = alberca.volumen_m3();
-    metros_cubicos * delta_ph * 100.0
+    #[test]
+    fn test_ph_ideal() {
+        let evaluacion = evaluar_ph(7.4);
+        assert_eq!(evaluacion, EstadoPh::Ideal);
+    }
+
+    #[test]
+    fn test_ph_acido_requiere_incrementador() {
+        let evaluacion = evaluar_ph(6.8);
+        match evaluacion {
+            EstadoPh::Bajo(delta) => {
+                assert!(delta > 0.0);
+            }
+            _ => panic!("Se esperaba EstadoPh::Bajo para pH 6.8"),
+        }
+    }
+
+    #[test]
+    fn test_ph_alcalino_requiere_reductor() {
+        let evaluacion = evaluar_ph(8.2);
+        match evaluacion {
+            EstadoPh::Alto(delta) => {
+                assert!(delta > 0.0);
+            }
+            _ => panic!("Se esperaba EstadoPh::Alto para pH 8.2"),
+        }
+    }
+
+    #[test]
+    fn test_calculo_dosis() {
+        let alberca = Alberca::nueva_rectangular(10.0, 5.0, 2.0); // 100 m3
+        let dosis = calcular_dosis_ph(&alberca, 0.4);
+        assert!(dosis > 0.0);
+    }
 }
