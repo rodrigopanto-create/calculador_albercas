@@ -8,17 +8,59 @@ use quimica::reporte::{self, DatosReporte};
 use quimica::volumen::Alberca;
 use std::io::{self, Write};
 
-fn leer_numero(prompt: &str) -> f64 {
+use std::io::{self, Write};
+
+/// Define un tipo de error claro para la entrada de datos
+#[derive(Debug)]
+pub enum ErrorEntrada {
+    FormatoInvalido,
+    NumeroNegativo,
+    RangoInvalido { min: f64, max: f64 },
+}
+
+/// Lee una línea desde la consola y devuelve un Result con el f64 parseado
+fn intentar_leer_f64(prompt: &str) -> Result<f64, ErrorEntrada> {
+    print!("{}", prompt);
+    io::stdout().flush().unwrap();
+
+    let mut entrada = String::new();
+    if io::stdin().read_line(&mut entrada).is_err() {
+        return Err(ErrorEntrada::FormatoInvalido);
+    }
+
+    // Usamos el Result retornado por parse()
+    match entrada.trim().parse::<f64>() {
+        Ok(num) => Ok(num),
+        Err(_) => Err(ErrorEntrada::FormatoInvalido),
+    }
+}
+
+/// Función robusta que buclea hasta obtener un número válido dentro de un rango opcional
+fn leer_numero_con_rango(prompt: &str, min: Option<f64>, max: Option<f64>) -> f64 {
     loop {
-        print!("{}", prompt);
-        io::stdout().flush().unwrap();
-
-        let mut entrada = String::new();
-        io::stdin().read_line(&mut entrada).expect("Error al leer");
-
-        match entrada.trim().parse::<f64>() {
-            Ok(num) if num >= 0.0 => return num,
-            _ => println!("Por favor, ingresa un número válido y positivo."),
+        match intentar_leer_f64(prompt) {
+            Ok(num) => {
+                // Validación opcional usando Option<f64>
+                if let Some(limite_min) = min {
+                    if num < limite_min {
+                        println!("  [!] El valor no puede ser menor a {}.", limite_min);
+                        continue;
+                    }
+                }
+                if let Some(limite_max) = max {
+                    if num > limite_max {
+                        println!("  [!] El valor no puede ser mayor a {}.", limite_max);
+                        continue;
+                    }
+                }
+                return num; // Si pasó las verificaciones, retornamos el valor
+            }
+            Err(ErrorEntrada::FormatoInvalido) => {
+                println!("  [!] Entrada no válida. Por favor ingresa únicamente números.");
+            }
+            Err(_) => {
+                println!("  [!] Ocurrió un error al procesar el dato.");
+            }
         }
     }
 }
@@ -48,32 +90,14 @@ fn main() {
     println!("=================================\n");
 
     println!("--- 1. Datos de la Alberca ---");
-    let largo = leer_numero("Largo (m): ");
-    let ancho = leer_numero("Ancho (m): ");
-    let prof = leer_numero("Profundidad media (m): ");
+// Solo aceptamos números mayores a 0 para dimensiones
+let largo = leer_numero_con_rango("Largo (m): ", Some(0.1), None);
+let ancho = leer_numero_con_rango("Ancho (m): ", Some(0.1), None);
+let prof = leer_numero_con_rango("Profundidad media (m): ", Some(0.1), None);
 
-    let mi_alberca = Alberca::nueva_rectangular(largo, ancho, prof);
-    
-    println!(
-        "\n>> Alberca creada: {:.2} L ({:.2} m³)\n", 
-        mi_alberca.volumen_litros, 
-        mi_alberca.volumen_m3()
-    );
-
-    println!("--- 2. Parámetros Químicos Principales ---");
-    let ppm_cloro_act = leer_numero("Concentración actual de cloro (ppm): ");
-    let ppm_cloro_des = leer_numero("Concentración deseada de cloro (ppm): ");
-    let producto_cloro = seleccionar_tipo_cloro();
-
-    let dosis_cloro = cloro::calcular_dosis_producto(
-        &mi_alberca, 
-        ppm_cloro_act, 
-        ppm_cloro_des, 
-        producto_cloro
-    );
-
-    let ph_actual = leer_numero("\nNivel de pH actual (ej. 7.4): ");
-    let alcalinidad_actual = leer_numero("Alcalinidad Total (ppm, ej. 100): ");
+println!("\n--- 2. Parámetros Químicos Principales ---");
+let ppm_cloro_act = leer_numero_con_rango("Cloro actual (ppm): ", Some(0.0), Some(20.0));
+let ph_actual = leer_numero_con_rango("Nivel de pH (0-14): ", Some(0.0), Some(14.0));
 
     println!("\n--- 3. Parámetros para Índice de Langelier ---");
     let temp_celsius = leer_numero("Temperatura del agua (°C, ej. 26): ");
