@@ -43,17 +43,23 @@ El proyecto sigue una arquitectura modular en Rust:
 
 ```text
 calcalb/
-├── src/
-│   ├── main.rs              # Punto de entrada y flujo de CLI
-│   ├── lib.rs               # Exportación de biblioteca
-│   └── quimica/             # Módulo principal de lógica de negocio
-│       ├── mod.rs           # Exposición de submódulos
-│       ├── volumen.rs       # Modelado geométrico de albercas
-│       ├── cloro.rs         # Lógica de dosificación por producto
-│       ├── ph.rs            # Evaluación y ajustes de pH
-│       ├── alcalinidad.rs   # Evaluación de buffer de alcalinidad
-│       ├── isl.rs           # Cálculo del Índice de Langelier
-│       └── reporte.rs       # Formateo DTO y exportación I/O
-├── Cargo.toml               # Configuración del proyecto y dependencias
-└── .gitignore               # Exclusión de binarios y temporales
+├── .gitignore               # Ignora /target y binarios de compilación
+├── Cargo.toml               # Dependencias (eframe/egui) y metadata del crate
+├── Cargo.lock               # Árbol exacto de dependencias bloqueadas
+├── README.md                # Documentación del proyecto
+├── reporte_alberca.txt      # Reporte generado (salida de prueba local)
+│
+└── src/
+    ├── main.rs              # Punto de entrada principal (Lanza la GUI eframe)
+    ├── lib.rs               # Exportador de módulos principales (gui y quimica)
+    │
+    ├── gui.rs               # Interfaz Gráfica de Usuario (Immediate Mode con egui)
+    │                        └── AlbercaApp (State, Sliders, Formulario y Render)
+    │
+    └── quimica/             # Módulo de lógica de negocio (Backend / Dominio)
+        ├── mod.rs           # Re-exporta volumen, ph, cloro y reporte
+        ├── volumen.rs       # Geometría (Alberca::Rectangular / Circular)
+        ├── ph.rs            # Cálculo del Índice de Saturación de Langelier (ISL)
+        ├── cloro.rs         # Dosificación por tipo (Tricloro vs Dicloro)
+        └── reporte.rs       # Formateador de diagnósticos y persitencia (std::fs)
 
