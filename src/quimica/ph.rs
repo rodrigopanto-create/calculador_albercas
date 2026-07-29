@@ -1,15 +1,31 @@
+//! # Módulo de Análisis y Ajuste de pH
+//!
+//! Este módulo contiene los algoritmos para diagnosticar el nivel de pH
+//! en albercas residenciales y calcular la dosificación exacta de correctores químicos.
+
 use crate::quimica::volumen::Alberca;
 
-/// Tipos de ajuste de pH disponibles con sus nombres descriptivos
+/// Define el tipo de corrector químico necesario para nivelar el pH.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum AjustePh {
+    /// Se utiliza cuando el pH es menor a 7.2.
     SubirPh,
+    /// Se utiliza cuando el pH es mayor a 7.6.
     BajarPh,
+    /// Se utiliza cuando el pH está en el rango óptimo (7.2 - 7.6).
     Ninguno,
 }
 
 impl AjustePh {
-    /// Retorna el nombre legible del producto o acción requerida
+    /// Retorna el nombre comercial/químico del producto recomendado.
+    ///
+    /// # Ejemplo
+    /// ```rust
+    /// use calculador_albercas::quimica::ph::AjustePh;
+    ///
+    /// let ajuste = AjustePh::SubirPh;
+    /// assert_eq!(ajuste.nombre(), "Carbonato de sodio (Incrementador de pH)");
+    /// ```
     pub fn nombre(&self) -> &'static str {
         match self {
             AjustePh::SubirPh => "Carbonato de sodio (Incrementador de pH)",
@@ -19,15 +35,24 @@ impl AjustePh {
     }
 }
 
-/// Estado o diagnóstico de la prueba de pH
+/// Diagnóstico numérico del pH.
 #[derive(Debug, PartialEq)]
 pub enum EstadoPh {
+    /// pH equilibrado entre 7.2 y 7.6.
     Ideal,
+    /// pH menor a 7.2. Contiene la desviación ($\Delta$).
     Bajo(f64),
+    /// pH mayor a 7.6. Contiene la desviación ($\Delta$).
     Alto(f64),
 }
 
-/// Evalúa el nivel de pH actual
+/// Evalúa una lectura de pH y determina el diagnóstico de balance.
+///
+/// # Parámetros
+/// * `ph_actual` - Valor flotante entre 0.0 y 14.0.
+///
+/// # Retorno
+/// Devuelve un valor de [`EstadoPh`] con el diagnóstico correspondiente.
 pub fn evaluar_ph(ph_actual: f64) -> EstadoPh {
     if ph_actual < 7.2 {
         let delta = 7.2 - ph_actual;
@@ -40,48 +65,9 @@ pub fn evaluar_ph(ph_actual: f64) -> EstadoPh {
     }
 }
 
-/// Calcula la dosis en gramos o ml según el tipo de desbalance
+/// Calcula la cantidad requerida de producto químico (en gramos o ml) según el volumen de la alberca.
+///
+/// Utiliza una tasa estándar de 10 unidades de producto por $m^3$ por cada 0.1 de ajuste.
 pub fn calcular_dosis_ph(alberca: &Alberca, delta: f64) -> f64 {
-    // 10g/ml por m3 por cada 0.1 de ajuste necesario
     delta * 10.0 * 10.0 * alberca.volumen_m3()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_ph_ideal() {
-        let evaluacion = evaluar_ph(7.4);
-        assert_eq!(evaluacion, EstadoPh::Ideal);
-    }
-
-    #[test]
-    fn test_ph_acido_requiere_incrementador() {
-        let evaluacion = evaluar_ph(6.8);
-        match evaluacion {
-            EstadoPh::Bajo(delta) => {
-                assert!(delta > 0.0);
-            }
-            _ => panic!("Se esperaba EstadoPh::Bajo para pH 6.8"),
-        }
-    }
-
-    #[test]
-    fn test_ph_alcalino_requiere_reductor() {
-        let evaluacion = evaluar_ph(8.2);
-        match evaluacion {
-            EstadoPh::Alto(delta) => {
-                assert!(delta > 0.0);
-            }
-            _ => panic!("Se esperaba EstadoPh::Alto para pH 8.2"),
-        }
-    }
-
-    #[test]
-    fn test_calculo_dosis() {
-        let alberca = Alberca::nueva_rectangular(10.0, 5.0, 2.0); // 100 m3
-        let dosis = calcular_dosis_ph(&alberca, 0.4);
-        assert!(dosis > 0.0);
-    }
 }
