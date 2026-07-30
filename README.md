@@ -38,3 +38,16 @@ calculador_albercas/
         ├── cloro.rs         # Cálculo de dosificación por producto químico
         └── reporte.rs       # Generación de reportes y persistencia I/O (std::fs)
 
+ ## 🛠️ Instalación y Uso
+
+
+Asegúrate de tener [Rust y Cargo](https://www.rust-lang.org/) instalados en tu sistema
+
+# 1. Clonar el repositorio
+git clone [https://github.com/rodrigopanto-create/calculador_albercas.git](https://github.com/rodrigopanto-create/calculador_albercas.git)
+
+# 2. Entrar a la carpeta del proyecto
+cd calculador_albercas
+
+# 3. Compilar y ejecutar la interfaz gráfica
+cargo run --release
