@@ -1,5 +1,7 @@
+#[cfg(all(not(target_os = "android"), not(target_arch = "wasm32")))]
 use calculador_albercas::gui::AlbercaApp;
 
+#[cfg(all(not(target_os = "android"), not(target_arch = "wasm32")))]
 fn main() -> eframe::Result<()> {
     let options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
@@ -14,3 +16,7 @@ fn main() -> eframe::Result<()> {
         Box::new(|_cc| Box::new(AlbercaApp::default())),
     )
 }
+
+// Cambiado 'or' por 'any'
+#[cfg(any(target_os = "android", target_arch = "wasm32"))]
+fn main() {}

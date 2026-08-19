@@ -51,3 +51,19 @@ cd calculador_albercas
 
 # 3. Compilar y ejecutar la interfaz gráfica
 cargo run --release
+
+# 4. 📱 Compilación Nátiva para Android (APK)
+
+Este proyecto puede compilarse directamente como un archivo instalable `.apk` para dispositivos Android utilizando `cargo-apk` y compilación cruzada desde Windows.
+
+### Requisitos Previos
+
+- **Android SDK** (instalado en `C:\Android\Sdk` o vía Android Studio)
+- **Android NDK** (v27d o superior)
+- **Target de Rust para ARM64**:
+
+ bash
+  rustup target add aarch64-linux-android
+  cargo install cargo-apk
+
+  cargo apk build --release
