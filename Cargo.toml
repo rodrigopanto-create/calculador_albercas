@@ -9,22 +9,31 @@ description = "Calculadora de química y volumen para albercas en Rust"
 name = "calculador_albercas"
 crate-type = ["cdylib", "rlib"]
 
-# Renombramos el binario de escritorio para evitar colisiones con WASM
 [[bin]]
 name = "calculador_albercas_desktop"
 path = "src/main.rs"
 
 [dependencies]
-eframe = "0.27"
+eframe = "0.28"
 
-# Habilita android-activity solo si el objetivo es Android
+# Dependencias exclusivas de Android
 [target.'cfg(target_os = "android")'.dependencies]
 android-activity = { version = "0.5", features = ["native-activity"] }
+winit = "0.29"
 
+# Dependencias exclusivas de WebAssembly
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+console_error_panic_hook = "0.1"
+
+# Configuración para cargo-apk
 [package.metadata.android]
-package_name = "com.rodrigo.calculador_albercas"
+package = "com.rodrigo.calculador_albercas"
 label = "Calculadora Albercas"
 build_targets = ["aarch64-linux-android"]
+
+[package.metadata.android.sdk]
 min_sdk_version = 21
 target_sdk_version = 33
 
@@ -33,8 +42,3 @@ path = "debug.keystore"
 keystore_password = "android"
 key_alias = "androiddebugkey"
 key_password = "android"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-console_error_panic_hook = "0.1"

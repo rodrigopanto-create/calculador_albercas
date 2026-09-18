@@ -6,35 +6,21 @@ use android_activity::AndroidApp;
 
 #[cfg(target_os = "android")]
 #[no_mangle]
-fn android_main(app: AndroidApp) {
+pub fn android_main(app: AndroidApp) {
     use eframe::NativeOptions;
+    use winit::platform::android::EventLoopBuilderExtAndroid;
 
     let mut options = NativeOptions::default();
-    options.android_app = Some(app);
 
-    eframe::run_native(
-        "Calculador de Albercas",
+    options.event_loop_builder = Some(Box::new(move |builder| {
+        builder.with_android_app(app);
+    }));
+
+    let _ = eframe::run_native(
+        "Calculadora Albercas",
         options,
-        Box::new(|_cc| Box::new(gui::AlbercaApp::default())),
-    )
-    .expect("Error al iniciar la app en Android");
-}
-
-// --- CONFIGURACIÓN ANDROID ---
-#[cfg(target_os = "android")]
-use android_activity::AndroidApp;
-
-#[cfg(target_os = "android")]
-#[no_mangle]
-fn android_main(_app: AndroidApp) {
-    use eframe::NativeOptions;
-    let options = NativeOptions::default();
-    eframe::run_native(
-        "Calculador de Albercas",
-        options,
-        Box::new(|_cc| Box::new(gui::AlbercaApp::default())),
-    )
-    .expect("Error al iniciar en Android");
+        Box::new(|_cc| Ok(Box::new(gui::AlbercaApp::default()))),
+    );
 }
 
 // --- CONFIGURACIÓN WEB (WASM) ---
@@ -44,7 +30,6 @@ use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
-    // Redirigir logs de Rust a la consola del navegador (console.log)
     console_error_panic_hook::set_once();
 
     let web_options = eframe::WebOptions::default();
@@ -52,7 +37,7 @@ pub fn start() -> Result<(), JsValue> {
     wasm_bindgen_futures::spawn_local(async {
         eframe::WebRunner::new()
             .start(
-                "the_canvas_id", // El ID del <canvas> en el HTML
+                "the_canvas_id",
                 web_options,
                 Box::new(|_cc| Box::new(gui::AlbercaApp::default())),
             )

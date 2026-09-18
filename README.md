@@ -1,69 +1,102 @@
-# 🏊‍♂️ Calculadora de Tratamiento Químico para Albercas v1.0.0
+# Calculador de Tratamiento de Albercas
 
-Una aplicación gráfica (GUI) de escritorio escrita en **Rust** usando **`eframe`** y **`egui`**, diseñada para el cálculo exacto de volumen, dosificación de productos químicos y la evaluación del **Índice de Saturación de Langelier (ISL)** para el mantenimiento profesional de piscinas.
+Aplicación gráfica nativa para calcular el volumen de una alberca, consultar
+parámetros de tratamiento y generar un diagnóstico químico con el Índice de
+Saturación de Langelier (ISL). Está escrita en Rust con `eframe` y `egui`.
 
-Proporciona una alternativa libre, de código abierto (FOSS), nativa y ultra rápida frente a software comercial o apps con suscripción.
+## Características
 
----
+- Geometría rectangular y circular, con volumen en metros cúbicos y litros.
+- Captura de pH, cloro, temperatura, dureza cálcica y alcalinidad.
+- Selección de producto de cloro: tricloro o dicloro en la interfaz actual.
+- Diagnóstico del equilibrio del agua mediante el ISL.
+- Generación y guardado de reportes de texto en `reporte_alberca.txt`.
+- Interfaz modular para escritorio y Android.
 
-## 🚀 Características
-
-- 🖥️ **Interfaz Gráfica Nativa (GUI):** Construida en modo inmediato (*Immediate Mode*) con `egui`.
-- 📐 **Geometría y Volumen:** Soporte para albercas rectangulares y circulares con cálculo automático en metros cúbicos ($m^3$) y litros ($L$).
-- 🧪 **Ajuste Químico Exacto:** Dosificación personalizada según el tipo de producto (Tricloro al 90%, Dicloro al 56%, etc.).
-- ⚖️ **Índice de Saturación de Langelier (ISL):** Diagnóstico dinámico sobre la tendencia del agua (corrosiva, balanceada o incrustante) considerando pH, temperatura, dureza cálcica y alcalinidad.
-- 📄 **Exportación de Reportes:** Generación e impresión de diagnósticos técnicos en archivos de texto `.txt`.
-- 🏗️ **Arquitectura Modular:** Lógica de negocio (física/química) 100% desacoplada de la capa de presentación.
-
----
-
-## 🛠️ Estructura del Proyecto
+## Arquitectura
 
 ```text
-calculador_albercas/
-├── Cargo.toml               # Configuración del crate y dependencias (eframe/egui)
-├── README.md                # Documentación del proyecto
-├── .gitignore               # Exclusión de target/ y binarios compilados
-│
+CalcAlb/
+├── Cargo.toml                 # Dependencias y configuración del crate
+├── README.md                  # Documentación del proyecto
+├── mobile.toml                # Identidad y configuración de cargo-apk
+├── Trunk.toml                 # Configuración de compilación WASM
+├── index.html                 # Entrada de la aplicación web
 └── src/
-    ├── main.rs              # Punto de entrada ejecutable (Inicializa eframe/egui)
-    ├── lib.rs               # Exportador principal del crate y módulos
-    │
-    ├── gui.rs               # Interfaz Gráfica de Usuario (AlbercaApp, Sliders y Eventos)
-    │
-    └── quimica/             # Módulo de lógica de negocio (Backend / Dominio)
-        ├── mod.rs           # Re-exportador de submódulos químicos
-        ├── volumen.rs       # Geometría y cálculo volumétrico
-        ├── ph.rs            # Cálculo del Índice de Saturación de Langelier (ISL)
-        ├── cloro.rs         # Cálculo de dosificación por producto químico
-        └── reporte.rs       # Generación de reportes y persistencia I/O (std::fs)
+    ├── main.rs                # Arranque de escritorio
+    ├── lib.rs                 # Exportación de módulos y entradas Android/WASM
+    ├── gui/
+    │   ├── mod.rs             # Estado de AlbercaApp y composición de vistas
+    │   ├── geometria.rs       # Forma y dimensiones de la alberca
+    │   ├── parametros.rs      # Parámetros químicos y tipo de cloro
+    │   └── diagnostico.rs     # Cálculo, visualización y guardado del reporte
+    └── quimica/
+        ├── mod.rs             # Módulos del dominio químico
+        ├── volumen.rs         # Modelos y cálculo de volumen
+        ├── cloro.rs           # Dosificación de productos de cloro
+        ├── ph.rs              # Cálculo y clasificación del ISL
+        ├── isl.rs             # Implementación auxiliar del ISL
+        ├── alcalinidad.rs     # Evaluación y dosificación de alcalinidad
+        └── reporte.rs         # Construcción y escritura de reportes
+```
 
- ## 🛠️ Instalación y Uso
+`AlbercaApp` contiene el estado editable de la interfaz. Las funciones
+`ui_geometria`, `ui_parametros` y `ui_diagnostico` reciben una referencia a ese
+estado y dibujan cada sección dentro del `ScrollArea` principal. La lógica de
+cálculo vive en `src/quimica`, separada de los controles de `egui`.
 
+## Requisitos
 
-Asegúrate de tener [Rust y Cargo](https://www.rust-lang.org/) instalados en tu sistema
+- Rust y Cargo mediante [rustup](https://rustup.rs/).
+- Para Android: Android SDK, Android NDK y `cargo-apk`.
+- Para web: `trunk` y el target `wasm32-unknown-unknown`.
 
-# 1. Clonar el repositorio
-git clone [https://github.com/rodrigopanto-create/calculador_albercas.git](https://github.com/rodrigopanto-create/calculador_albercas.git)
+## Uso en escritorio
 
-# 2. Entrar a la carpeta del proyecto
-cd calculador_albercas
-
-# 3. Compilar y ejecutar la interfaz gráfica
+```bash
 cargo run --release
+```
 
-# 4. 📱 Compilación Nátiva para Android (APK)
+Para comprobar el proyecto sin iniciar la aplicación:
 
-Este proyecto puede compilarse directamente como un archivo instalable `.apk` para dispositivos Android utilizando `cargo-apk` y compilación cruzada desde Windows.
+```bash
+cargo check
+cargo test
+cargo fmt --check
+```
 
-### Requisitos Previos
+## Compilación para Android
 
-- **Android SDK** (instalado en `C:\Android\Sdk` o vía Android Studio)
-- **Android NDK** (v27d o superior)
-- **Target de Rust para ARM64**:
+La configuración de Android se encuentra en `mobile.toml` y define el paquete
+`com.rodrigo.calc_alb`. Instala el target ARM64 y `cargo-apk` antes de compilar:
 
- bash
-  rustup target add aarch64-linux-android
-  cargo install cargo-apk
+```bash
+rustup target add aarch64-linux-android
+cargo install cargo-apk
+cargo apk build --release
+```
 
-  cargo apk build --release
+El APK generado queda dentro de `target/` en la salida de `cargo-apk`. Para
+instalarlo en un dispositivo conectado con ADB:
+
+```bash
+adb install -r target/release/apk/calculador_albercas.apk
+```
+
+La ruta exacta puede variar según la versión de `cargo-apk` y el target activo.
+
+## Compilación web
+
+```bash
+rustup target add wasm32-unknown-unknown
+cargo install trunk
+trunk serve
+```
+
+Después abre la dirección local mostrada por Trunk en el navegador.
+
+## Reportes
+
+El diagnóstico se genera desde la sección **Diagnóstico y Reporte**. El botón
+**Guardar reporte** escribe el contenido en `reporte_alberca.txt` usando el
+directorio de trabajo de la aplicación.

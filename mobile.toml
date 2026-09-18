@@ -1,0 +1,5 @@
+[app]
+name = "calc-alb"
+stylized-name = "Calc Alb"
+identifier = "com.rodrigo.calc_alb"
+template-pack = "egui"

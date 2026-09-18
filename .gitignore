@@ -1,3 +1,23 @@
-/target
+# Artefactos de Rust
+/target/
+
+# Configuración local del SDK/NDK
+/.cargo/
+
+# Salidas generadas por cargo-apk, Gradle y builds auxiliares
+/android_build/
+/build/
+/gen/
+/dist/
+
+# Paquetes y bibliotecas compiladas
+*.apk
+*.idsig
+*.so
+
+# Claves locales de firma
+debug.keystore
+
+# Respaldos y reportes generados
 **/*.rs.bk
 *.txt
